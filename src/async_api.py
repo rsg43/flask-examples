@@ -9,11 +9,14 @@ service.
 from types import TracebackType
 from typing import Union, Callable, Any
 from typing_extensions import Self
+
 from flask import Response
+
 from src.app import WebApp, WebAppConfig
+from src.fake_client import FakeAsyncClient
 
 
-class WebAPI:
+class AsyncWebAPI:
     """
     Base Web API service, which contains the run method to start the web API
     and requires implementations to add endpoint handlers to the web app.
@@ -32,7 +35,9 @@ class WebAPI:
             str, tuple[list[str], str, Callable[..., Any]]
         ] = {
             "homepage": (["GET"], "/", self._create_homepage),
+            "async_test": (["GET"], "/async_test", self._async_test),
         }
+        self._fake_client = FakeAsyncClient()
 
     def __enter__(self) -> Self:
         """
@@ -94,3 +99,15 @@ class WebAPI:
         return Response(
             "<h1> Hello, welcome to the Async Flask API homepage! </h1>", 200
         )
+
+    async def _async_test(self, params: dict[str, Any]) -> Response:
+        """
+        Example async handler for testing purposes.
+
+        :param params: The request parameters.
+        :type params: dict[str, Any]
+        :return: The response.
+        :rtype: Response
+        """
+        _ = params
+        return Response("<h1> This is an async test handler! </h1>", 200)

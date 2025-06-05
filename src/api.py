@@ -9,7 +9,9 @@ service.
 from types import TracebackType
 from typing import Union, Callable, Any
 from typing_extensions import Self
+
 from flask import Response
+
 from src.app import WebApp, WebAppConfig
 
 

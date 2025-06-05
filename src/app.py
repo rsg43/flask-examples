@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from typing import Callable, Any
 
 from flask import Flask, request
-
 from flask_cors import CORS
 from waitress import serve
 
