@@ -1,0 +1,7 @@
+# Testing dependencies
+requests==2.32.3
+
+# Flask dependencies
+flask[async]==3.1.0
+flask-cors==5.0.1
+waitress==3.0.2
