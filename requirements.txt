@@ -5,3 +5,16 @@ requests==2.32.3
 flask[async]==3.1.0
 flask-cors==5.0.1
 waitress==3.0.2
+
+# Dev dependencies
+flake8==7.1.1
+pylint==3.3.3
+mypy==1.13.0
+black==24.10.0
+pydoclint==0.6.0
+pyenchant==3.2.2
+semgrep==1.103.0
+pytest==8.3.4
+types-requests==2.32.0.20250301
+types-waitress==3.0.1.20241117
+types-Flask-Cors==5.0.0.20250413
