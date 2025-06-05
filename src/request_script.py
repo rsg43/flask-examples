@@ -1,5 +1,3 @@
-from typing import Any
-
 import requests
 
 
@@ -25,7 +23,7 @@ def main() -> None:
         return
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=5)
         print("Response Status Code:", response.status_code)
         print("Response Headers:", response.headers)
         print("Response Text:", response.text)

@@ -132,23 +132,23 @@ class WebApp:
                 raise ValueError(f"Unsupported method: {method}")
 
             return _async_handler
+
+        if method == "GET":
+
+            def _handler(*args: Any, **kwargs: Any) -> Any:
+                return handler(request.args.to_dict(), *args, **kwargs)
+
+        elif method in ["POST", "PATCH", "PUT"]:
+
+            def _handler(*args: Any, **kwargs: Any) -> Any:
+                return handler(
+                    request.data.decode(),
+                    request.args.to_dict(),
+                    *args,
+                    **kwargs,
+                )
+
         else:
-            if method == "GET":
+            raise ValueError(f"Unsupported method: {method}")
 
-                def _handler(*args: Any, **kwargs: Any) -> Any:
-                    return handler(request.args.to_dict(), *args, **kwargs)
-
-            elif method in ["POST", "PATCH", "PUT"]:
-
-                def _handler(*args: Any, **kwargs: Any) -> Any:
-                    return handler(
-                        request.data.decode(),
-                        request.args.to_dict(),
-                        *args,
-                        **kwargs,
-                    )
-
-            else:
-                raise ValueError(f"Unsupported method: {method}")
-
-            return _handler
+        return _handler
