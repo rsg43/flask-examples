@@ -4,8 +4,9 @@ web app, which uses Flask to create a web application that is used by the Web
 API to enable communication.
 """
 
+from asyncio.coroutines import iscoroutinefunction
 from dataclasses import dataclass
-from typing import Callable, Any
+from typing import Callable, Any, Awaitable
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -65,7 +66,7 @@ class WebApp:
         self,
         endpoint: str,
         endpoint_name: str,
-        handler: Callable[..., Any],
+        handler: Callable[..., Any] | Callable[..., Awaitable[Any]],
         methods: list[str],
     ) -> None:
         """
@@ -90,8 +91,10 @@ class WebApp:
         )
 
     def _wrap_handler(
-        self, handler: Callable[..., Any], methods: list[str]
-    ) -> Callable[..., Any]:
+        self,
+        handler: Callable[..., Any] | Callable[..., Awaitable[Any]],
+        methods: list[str],
+    ) -> Callable[..., Any] | Callable[..., Awaitable[Any]]:
         """
         Wraps the handler function to accept the request data and arguments as
         parameters. This allows us to use special properties of requests, such
@@ -107,23 +110,45 @@ class WebApp:
         :rtype: Callable[..., Any]
         """
         (method,) = methods
+        if iscoroutinefunction(handler):
+            if method == "GET":
 
-        if method == "GET":
+                async def _async_handler(*args: Any, **kwargs: Any) -> Any:
+                    return await handler(
+                        request.args.to_dict(), *args, **kwargs
+                    )
 
-            def _handler(*args: Any, **kwargs: Any) -> Any:
-                return handler(request.args.to_dict(), *args, **kwargs)
+            elif method in ["POST", "PATCH", "PUT"]:
 
-        elif method in ["POST", "PATCH", "PUT"]:
+                async def _async_handler(*args: Any, **kwargs: Any) -> Any:
+                    return await handler(
+                        request.data.decode(),
+                        request.args.to_dict(),
+                        *args,
+                        **kwargs,
+                    )
 
-            def _handler(*args: Any, **kwargs: Any) -> Any:
-                return handler(
-                    request.data.decode(),
-                    request.args.to_dict(),
-                    *args,
-                    **kwargs,
-                )
+            else:
+                raise ValueError(f"Unsupported method: {method}")
 
+            return _async_handler
         else:
-            raise ValueError(f"Unsupported method: {method}")
+            if method == "GET":
 
-        return _handler
+                def _handler(*args: Any, **kwargs: Any) -> Any:
+                    return handler(request.args.to_dict(), *args, **kwargs)
+
+            elif method in ["POST", "PATCH", "PUT"]:
+
+                def _handler(*args: Any, **kwargs: Any) -> Any:
+                    return handler(
+                        request.data.decode(),
+                        request.args.to_dict(),
+                        *args,
+                        **kwargs,
+                    )
+
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+
+            return _handler
