@@ -16,10 +16,9 @@ if args.service == "normal":
         app.run()
 
 elif args.service == "async":
-    from src.async_api import AsyncWebAPI
+    from src.async_api import start_async_api
 
-    with AsyncWebAPI() as app:
-        app.run()
+    start_async_api()
 
 else:
     raise ValueError(
